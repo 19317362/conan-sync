@@ -42,7 +42,7 @@ def run_conan(args, reraise_error=False):
 # python3 mysync.py --source conan-center --dest my --ignore_failures
 # Check if conan is installed
 # run_conan([], reraise_error=True)
-
+# only download to local, without upload & remove
 # get list of recipes on source
 for letter in 'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
     raw_exsits_pkg = run_conan(['search', "*"])
