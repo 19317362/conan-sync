@@ -43,7 +43,7 @@ def run_conan(args, reraise_error=False):
 run_conan([], reraise_error=True)
 
 # get list of recipes on source
-raw_source_recipes = run_conan(['search', '-r', source_remote, '*'])
+raw_source_recipes = run_conan(['search', '-r', source_remote, '*a*'])
 source_recipes = raw_source_recipes.decode('utf8').splitlines()[2:]  # Skip the header lines
 
 package_json = tempfile.NamedTemporaryFile(mode='r', encoding='utf8')

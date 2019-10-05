@@ -41,6 +41,8 @@ Ignore upload failures. That way you can get more of the uploads done and
 review the logs for the fixes needed.
  
     python3 conan-sync.py --source <source remote> --dest <dest remote> --ignore_failures
+    
+    python3 conan-sync.py --source conan-center --dest my --ignore_failures
 
 Apply the fixes needed. then sync again.
 On you second second sync previously uploaded packages will be skipped 
