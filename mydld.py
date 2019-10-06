@@ -50,8 +50,10 @@ def run_conan(args, reraise_error=False):
 member = ['conan-center','jfrog']
 # member = ['jfrog']
 
+# I can not search '*', but can search '*a*' ...
+
 for source_remote in member:
-    for letter in 'mnopqrstuvwxyz-_': #'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
+    for letter in 'abcdefghijklmnopqrstuvwxyz-_':
         raw_exsits_pkg = run_conan(['search', "*"])
             
         try:
