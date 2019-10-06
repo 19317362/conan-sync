@@ -1,5 +1,9 @@
 # conan-sync
 
+This is forked from (https://github.com/timdaman/conan-sync).
+
+Many thanks to the auther.
+
 This is a utility for sending all the contents of one conan(https://conan.io/) server to another. 
 This is helpful when migrating to a new conan server or to create and maintain
 a replica of a conan server.
@@ -12,46 +16,34 @@ limited to the destination.
 I am offering this in the hopes it will save someone else time doing a 
 similar task. I will accept patches to improve it.
 
-## Usage Requirements
-* Locally installed conan (old versions my not work)
-* Conan remotes configured for the source and destination
-* Active log-ins into the remotes with appropriate privileges
-* Enough disks-pace, where the script runs, to hold your largest package
-* You must use a python3/pip3 conan install
+## Memo (2019-10-06)
+I'm in China. The network for conan center is very SLOW. And always timeout. To resolve this problem, I've tried to use this tool. But it can not work. I'm a C++ fan, not familiar with Python. The modification made by me maybe very ugly, but it works.
+
+## Errors during my try
+
+* The command "conan search -r server "*" " only works for conan-community
+* Search and Dowload always timeout...
+* Ctrl-C can make local recipe broken somehow....
 
 
-## Limitations
-* Recipes are synced even when already present on dest.
-* Recipes + Packages are NOT removed to dest if not present on on source.
-* This MAY REMOVE DATA from machine it is run on. It uses the local 
-computer as a scratch space to move data and cleans up after itself
-blindly. Data present before starting may be removed. That being said the 
-data can be downloaded from either remote when done syncing.
-* This code was not heavily tested nor does it have a test suite. 
-I stopped when it worked for me. That being said this should not result 
-in data loss (minus previous warning)
-* Sometimes `conanfiles` may enforce dependencies on the transfer agent 
-causing copies to fail until they are installed on the machine used to
-run this script.
+## My solution
+
+* sync all remote packages to local server for facility.
+* split the process of download and upload
+* add broken-fix while uploading
 
 
-## How to use
-
-Ignore upload failures. That way you can get more of the uploads done and
-review the logs for the fixes needed.
- 
-    python3 conan-sync.py --source <source remote> --dest <dest remote> --ignore_failures
-    
-    python3 conan-sync.py --source conan-center --dest my --ignore_failures
-
-Apply the fixes needed. then sync again.
-On you second second sync previously uploaded packages will be skipped 
-allowing you to redo your previous failures
-
-    python3 conan-sync.py --source <source remote> --dest <dest remote>
-    
-If your conan command is not in your search path you can specify where to 
-find it
-
-    python3 conan-sync.py --source <source remote> --dest <dest remote> --exec $HOME/.bin/conan
+## How To Use (2019-10-06)
+* run mydld_all.py to download with patern '*'
+  ```python
+  python3 mydld_all.py --source conan-center --dest my --ignore_failures
+  ```
+* run mydld.py to download with search each paterns from 'a' to 'z'
+  ```python
+  python3 mydld.py --source conan-center --dest my --ignore_failures
+  ```
+* run myup.py upload all local to my local server (will re-download broken recipes if any)
+  ```python
+  python3 myup.py --source conan-center --dest my --ignore_failures
+  ```
 

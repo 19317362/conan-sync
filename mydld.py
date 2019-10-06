@@ -47,8 +47,8 @@ def run_conan(args, reraise_error=False):
 # only conan-community can search *
 # bincrafters search failed
 
-# member = ['conan-center','jfrog']
-member = ['jfrog']
+member = ['conan-center','jfrog']
+# member = ['jfrog']
 
 for source_remote in member:
     for letter in 'mnopqrstuvwxyz-_': #'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
