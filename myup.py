@@ -39,6 +39,22 @@ def run_conan(args, reraise_error=False):
         if reraise_error and not ignore_failures:
             raise e
 
+def do_dld_and_up(source_recipe):
+        print('downloading ...',source_recipe)
+        starttime = datetime.datetime.now()
+        run_conan(['download', '-r', source_remote, '--recipe', source_recipe])
+        endtime = datetime.datetime.now()
+        print('time used :', (endtime - starttime).seconds)
+        try:
+            print('upload ...', source_recipe)
+            starttime = datetime.datetime.now()
+            run_conan(['upload', '-r', dest_remote,'-c', source_recipe], reraise_error=True)
+            endtime = datetime.datetime.now()
+            print('time used :', (endtime - starttime).seconds)    
+            return 0        
+        except:
+            return 1
+
 # python3 mysync.py --source conan-center --dest my --ignore_failures
 # Check if conan is installed
 # run_conan([], reraise_error=True)
@@ -54,23 +70,15 @@ exists_recipes = raw_exsits_pkg.decode('utf8').splitlines()[2:]
 for source_recipe in exists_recipes:
 
     try:
-        print('upload ...', source_recipe)
-        starttime = datetime.datetime.now()
-        run_conan(['upload', '-r', dest_remote,'-c', source_recipe], reraise_error=True)
-        endtime = datetime.datetime.now()
-        print('time used :', (endtime - starttime).seconds)        
+        # print('upload ...', source_recipe)
+        # starttime = datetime.datetime.now()
+        upack = run_conan(['upload', '-r', dest_remote,'-c', source_recipe], reraise_error=True)
+        if upack is None:
+            do_dld_and_up(source_recipe)
+
+        # endtime = datetime.datetime.now()
+        # print('time used :', (endtime - starttime).seconds)        
     except:
         # Sync recipe over
-        print('downloading ...',source_recipe)
-        starttime = datetime.datetime.now()
-        run_conan(['download', '-r', source_remote, '--recipe', source_recipe])
-        endtime = datetime.datetime.now()
-        print('time used :', (endtime - starttime).seconds)
-        try:
-            print('upload ...', source_recipe)
-            starttime = datetime.datetime.now()
-            run_conan(['upload', '-r', dest_remote,'-c', source_recipe], reraise_error=True)
-            endtime = datetime.datetime.now()
-            print('time used :', (endtime - starttime).seconds)            
-        except:
-            continue
+        do_dld_and_up(source_recipe)
+
