@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import time
+import datetime
 # Parse args
 import tempfile
 
@@ -41,28 +42,52 @@ def run_conan(args, reraise_error=False):
 # python3 mysync.py --source conan-center --dest my --ignore_failures
 # Check if conan is installed
 # run_conan([], reraise_error=True)
-
+# only download to local, without upload & remove
 # get list of recipes on source
+# only conan-community can search *
+member = ['conan-community']
+for source_remote in member:
+    raw_exsits_pkg = run_conan(['search', "*"])
+    exists_recipes = raw_exsits_pkg.decode('utf8').splitlines()[2:]
+            
+    retry = 0
+    raw_source_recipes = ''
+    while retry < 8 :
+        pat = '*'
+        print('search ...', pat)
+        starttime = datetime.datetime.now()
+        raw_source_recipes = run_conan(['search', '-r', source_remote, pat])
+        endtime = datetime.datetime.now()
+        print('time used :', (endtime - starttime).seconds)
+        if raw_source_recipes is None:
+            retry = retry + 1
+            continue
+        else:
+            break
 
-raw_exsits_pkg = run_conan(['search', "*"])
-exists_recipes = raw_exsits_pkg.decode('utf8').splitlines()[2:]
-
-for letter in 'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
-    pat = '*' +letter +'*'
-    print('search ...', pat)
-    t = time.process_time()
-    raw_source_recipes = run_conan(['search', '-r', source_remote, pat])
-    print('time used :', time.process_time() - t)
-    source_recipes = raw_source_recipes.decode('utf8').splitlines()[2:]  # Skip the header lines
+    try:
+        source_recipes = raw_source_recipes.decode('utf8').splitlines()[2:]  # Skip the header lines
+    except:
+        continue
 
     package_json = tempfile.NamedTemporaryFile(mode='r', encoding='utf8')
 
     for source_recipe in source_recipes:
         print(source_recipe)
+        if source_recipe.count('/')<2: # skip old patern like aaa/vvv
+            continue
+
+        if source_recipe in exists_recipes:  # Already present on dest
+            # print(": Already present on dest, skipping")
+            continue        
         # Sync recipe over
-        t = time.process_time()
+        print('downloading ...',source_recipe)
+        starttime = datetime.datetime.now()
         run_conan(['download', '-r', source_remote, '--recipe', source_recipe])
-        print('time used :', time.process_time() - t)
+        endtime = datetime.datetime.now()
+        print('time used :', (endtime - starttime).seconds)
+            
+
 
 
  

@@ -44,32 +44,61 @@ def run_conan(args, reraise_error=False):
 # run_conan([], reraise_error=True)
 # only download to local, without upload & remove
 # get list of recipes on source
-for letter in 'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
-    raw_exsits_pkg = run_conan(['search', "*"])
-    exists_recipes = raw_exsits_pkg.decode('utf8').splitlines()[2:]
+# only conan-community can search *
+# bincrafters search failed
 
-    pat = '*' +letter +'*'
-    print('search ...', pat)
-    starttime = datetime.datetime.now()
-    raw_source_recipes = run_conan(['search', '-r', source_remote, pat])
-    endtime = datetime.datetime.now()
-    print('time used :', (endtime - starttime).seconds)
-    source_recipes = raw_source_recipes.decode('utf8').splitlines()[2:]  # Skip the header lines
+# member = ['conan-center','jfrog']
+member = ['jfrog']
 
-    package_json = tempfile.NamedTemporaryFile(mode='r', encoding='utf8')
+for source_remote in member:
+    for letter in 'mnopqrstuvwxyz-_': #'abcdefghijklmnopqrstuvwxyz-_':     # 第一个实例
+        raw_exsits_pkg = run_conan(['search', "*"])
+            
+        try:
+            exists_recipes = raw_exsits_pkg.decode('utf8').splitlines()[2:]
+        except:
+            continue
+        retry = 0
+        raw_source_recipes = ''
+        while retry < 8 :
+            pat = '*' +letter +'*'
+            print('search ...', pat)
+            starttime = datetime.datetime.now()
+            raw_source_recipes = run_conan(['search', '-r', source_remote, pat])
+            endtime = datetime.datetime.now()
+            print('time used :', (endtime - starttime).seconds)
+            if raw_source_recipes is None:
+                retry = retry + 1
+                continue
+            else:
+                break
 
-    for source_recipe in source_recipes:
-        print(source_recipe)
-        if source_recipe in exists_recipes:  # Already present on dest
-            # print(": Already present on dest, skipping")
-            continue        
-        # Sync recipe over
-        print('downloading ...',source_recipe)
-        starttime = datetime.datetime.now()
-        run_conan(['download', '-r', source_remote, '--recipe', source_recipe])
-        endtime = datetime.datetime.now()
-        print('time used :', (endtime - starttime).seconds)
-        
+        if retry >=8 :
+            print('GIVE UP ...', pat)
+            continue
+
+        try:
+            source_recipes = raw_source_recipes.decode('utf8').splitlines()[2:]  # Skip the header lines
+        except:
+            continue
+
+        package_json = tempfile.NamedTemporaryFile(mode='r', encoding='utf8')
+
+        for source_recipe in source_recipes:
+            print(source_recipe)
+            if source_recipe.count('/')<2: # skip old patern like aaa/vvv
+                continue
+
+            if source_recipe in exists_recipes:  # Already present on dest
+                # print(": Already present on dest, skipping")
+                continue        
+            # Sync recipe over
+            print('downloading ...',source_recipe)
+            starttime = datetime.datetime.now()
+            run_conan(['download', '-r', source_remote, '--recipe', source_recipe])
+            endtime = datetime.datetime.now()
+            print('time used :', (endtime - starttime).seconds)
+            
 
 
 
